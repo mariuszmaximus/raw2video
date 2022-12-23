@@ -1,4 +1,4 @@
-#include "ffmpeg_encode.h"
+#include "raw2video.h"
 
 #include <iostream>
 
@@ -12,17 +12,17 @@ extern "C"
 }
 
 
-FfmpegEncoder::FfmpegEncoder(const char *filename, const Params &params)
+Raw2Video::Raw2Video(const char *filename, const Params &params)
 {
 	Open(filename, params);
 }
 
-FfmpegEncoder::~FfmpegEncoder()
+Raw2Video::~Raw2Video()
 {
 	Close();
 }
 
-bool FfmpegEncoder::Open(const char *filename, const Params &params)
+bool Raw2Video::Open(const char *filename, const Params &params)
 {
 	Close();
 
@@ -35,7 +35,8 @@ bool FfmpegEncoder::Open(const char *filename, const Params &params)
 			break;
 		}
 
-		mContext.codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+		mContext.codec = avcodec_find_encoder(params.codec);
+	
 		if (!mContext.codec) 
 		{
 			std::cout << "could not find encoder" << std::endl;
@@ -71,24 +72,24 @@ bool FfmpegEncoder::Open(const char *filename, const Params &params)
 			mContext.codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
 		int ret = 0;
-		if (params.preset)
-		{
-			ret = av_opt_set(mContext.codec_context->priv_data, "preset", params.preset, 0);
-			if (ret != 0)
-			{
-				std::cout << "could not set preset: " << params.preset << std::endl;
-				break;
-			}
-		}
+		// if (params.preset)
+		// {
+		// 	ret = av_opt_set(mContext.codec_context->priv_data, "preset", params.preset, 0);
+		// 	if (ret != 0)
+		// 	{
+		// 		std::cout << "could not set preset: " << params.preset << std::endl;
+		// 		break;
+		// 	}
+		// }
 
-		{
-			ret = av_opt_set_int(mContext.codec_context->priv_data, "crf", params.crf, 0);
-			if (ret != 0)
-			{
-				std::cout << "could not set crf: " << params.crf << std::endl;
-				break;
-			}
-		}
+		// {
+		// 	ret = av_opt_set_int(mContext.codec_context->priv_data, "crf", params.crf, 0);
+		// 	if (ret != 0)
+		// 	{
+		// 		std::cout << "could not set crf: " << params.crf << std::endl;
+		// 		break;
+		// 	}
+		// }
 
 		ret = avcodec_open2(mContext.codec_context, mContext.codec, nullptr);
 		if (ret != 0) 
@@ -161,7 +162,7 @@ bool FfmpegEncoder::Open(const char *filename, const Params &params)
 	return false;
 }
 
-void FfmpegEncoder::Close()
+void Raw2Video::Close()
 {
 	if (mIsOpen)
 	{
@@ -195,7 +196,7 @@ void FfmpegEncoder::Close()
 	mIsOpen = false;
 }
 
-bool FfmpegEncoder::Write(const unsigned char *data)
+bool Raw2Video::Write(const unsigned char *data)
 {
 	if (!mIsOpen)
 		return false;
@@ -226,13 +227,13 @@ bool FfmpegEncoder::Write(const unsigned char *data)
 	return FlushPackets();
 }
 
-bool FfmpegEncoder::IsOpen() const
+bool Raw2Video::IsOpen() const
 {
 	return mIsOpen;
 }
 
 
-bool FfmpegEncoder::FlushPackets()
+bool Raw2Video::FlushPackets()
 {
 	int ret;
 	do

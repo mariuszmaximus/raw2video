@@ -1,7 +1,10 @@
 
 #include <stdint.h>
-#include <libavutil\pixfmt.h>
-
+extern "C"
+{
+#include <libavutil\pixfmt.h>			// AVPixelFormat
+#include <libavcodec\codec_id.h>		// AVCodecID
+}
 // presets:
 //
 // ultrafast
@@ -14,8 +17,15 @@
 // slower
 // veryslow
 
+// CRF
+// What is the Constant Rate Factor?
+// The Constant Rate Factor (CRF) is the default quality (and rate control) setting for the x264 and x265 encoders, 
+// and it’s also available for libvpx. With x264 and x265, you can set the values between 0 and 51, 
+// where lower values would result in better quality, at the expense of higher file sizes. 
+// Higher values mean more compression, but at some point you will notice the quality degradation.
+// For x264, sane values are between 18 and 28. The default is 23, so you can use this as a starting point.
 
-class FfmpegEncoder
+class Raw2Video
 {
 public:
 	struct Params
@@ -30,11 +40,12 @@ public:
 
 		enum AVPixelFormat src_format;
 		enum AVPixelFormat dst_format;
+		AVCodecID codec;
 	};
 
-	FfmpegEncoder() = default;
-	FfmpegEncoder(const char *filename, const Params &params);
-	~FfmpegEncoder();
+	Raw2Video() = default;
+	Raw2Video(const char *filename, const Params &params);
+	~Raw2Video();
 
 	bool Open(const char *filename, const Params &params);
 
