@@ -68,28 +68,38 @@ bool Raw2Video::Open(const char *filename, const Params &params)
 		mContext.codec_context->gop_size = 12;
 		mContext.codec_context->max_b_frames = 2;
 
+		if (!params.in_lineSizeInBytes) 
+		{
+			mContext.in_lineSizeInBytes = mContext.codec_context->width*3; // TODO (Why x3 ?)
+		}
+		else
+		{
+			mContext.in_lineSizeInBytes = params.in_lineSizeInBytes;
+		}
+
+
 		if (mContext.format_context->oformat->flags & AVFMT_GLOBALHEADER) 
 			mContext.codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
 		int ret = 0;
-		// if (params.preset)
-		// {
-		// 	ret = av_opt_set(mContext.codec_context->priv_data, "preset", params.preset, 0);
-		// 	if (ret != 0)
-		// 	{
-		// 		std::cout << "could not set preset: " << params.preset << std::endl;
-		// 		break;
-		// 	}
-		// }
+		if (params.preset)
+		{
+			ret = av_opt_set(mContext.codec_context->priv_data, "preset", params.preset, 0);
+			if (ret != 0)
+			{
+				std::cout << "could not set preset: " << params.preset << std::endl;
+				break;
+			}
+		}
 
-		// {
-		// 	ret = av_opt_set_int(mContext.codec_context->priv_data, "crf", params.crf, 0);
-		// 	if (ret != 0)
-		// 	{
-		// 		std::cout << "could not set crf: " << params.crf << std::endl;
-		// 		break;
-		// 	}
-		// }
+		{
+			ret = av_opt_set_int(mContext.codec_context->priv_data, "crf", params.crf, 0);
+			if (ret != 0)
+			{
+				std::cout << "could not set crf: " << params.crf << std::endl;
+				break;
+			}
+		}
 
 		ret = avcodec_open2(mContext.codec_context, mContext.codec, nullptr);
 		if (ret != 0) 
@@ -208,13 +218,14 @@ bool Raw2Video::Write(const unsigned char *data)
 		return false;
 	}
 
-	const int in_linesize[1] = { mContext.codec_context->width * 3 };
+	const int in_linesize[1] = {(int)mContext.in_lineSizeInBytes};
 
 	sws_scale(
 		mContext.sws_context,
 		&data, in_linesize, 0, mContext.codec_context->height,  // src
 		mContext.frame->data, mContext.frame->linesize // dst
 	);
+
 	mContext.frame->pts = mContext.frame_index++;
 
 	ret = avcodec_send_frame(mContext.codec_context, mContext.frame);

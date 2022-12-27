@@ -32,6 +32,7 @@ public:
 	{
 		uint32_t width;
 		uint32_t height;
+		uint32_t in_lineSizeInBytes{0}; // input line size in Bytes ( can be:  lineSizeInBytes > width*saplesPerPixel ) if(0) then in_lineSizeInBytes = width*3 (RGB)
 		double fps;
 		uint32_t bitrate;
 		const char *preset;
@@ -71,6 +72,8 @@ private:
 		struct AVCodec *codec = nullptr;
 		
 		uint32_t frame_index = 0;
+
+		uint32_t in_lineSizeInBytes{0}; // input line size , set in Open() ( it can be  lineSizeInBytes > width*saplesPerPixel )
 	};
 
 	Context mContext = {};
