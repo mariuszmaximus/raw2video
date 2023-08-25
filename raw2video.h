@@ -2,8 +2,8 @@
 #include <stdint.h>
 extern "C"
 {
-#include <libavutil\pixfmt.h>			// AVPixelFormat
-#include <libavcodec\codec_id.h>		// AVCodecID
+#include <libavutil/pixfmt.h>			// AVPixelFormat
+#include <libavcodec/codec_id.h>		// AVCodecID
 }
 // presets:
 //
@@ -69,7 +69,7 @@ private:
 		struct AVCodecContext *codec_context = nullptr;
 		struct AVFrame *frame = nullptr;
 		struct SwsContext *sws_context = nullptr;
-		struct AVCodec *codec = nullptr;
+		const struct AVCodec *codec = nullptr;
 		
 		uint32_t frame_index = 0;
 
